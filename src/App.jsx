@@ -6,7 +6,8 @@ import {
   Baby, Syringe, Sparkles, Menu, X, CheckCircle2,
   ArrowRight, MessageCircle
 } from 'lucide-react';
-
+import clinicLogo from './assets/logo.svg';
+import drimage from "./assets/dr_image.jpeg";
 // --- CUSTOM VENGENCE UI COMPONENTS ---
 
 const MorphText = ({ words, className }) => {
@@ -192,7 +193,7 @@ export default function App() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3 bg-[#0a2e25]/95 backdrop-blur-xl shadow-lg border-b border-white/10' : 'py-5 bg-[#0a2e25]'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 cursor-pointer" onClick={() => scrollTo('home')}>
-            <img src="/favicon.svg" alt="Best Dental Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover shadow-sm" />
+            <img src={clinicLogo} alt="Best Dental Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover shadow-sm" />
             <span className="text-xl md:text-2xl font-bold tracking-tight text-amber-400">Best Dental</span>
           </div>
 
@@ -288,7 +289,7 @@ export default function App() {
               <div className="absolute inset-0 bg-gradient-to-tr from-emerald-100 to-teal-50 rounded-[3rem] rotate-3 scale-105" />
               <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl border border-white/60 rounded-[3rem] shadow-2xl overflow-hidden p-2">
                 <img 
-                  src="https://images.unsplash.com/photo-1590611936760-eeb9bc500b75?q=80&w=1000&auto=format&fit=crop" 
+                  src= {drimage} 
                   alt="Dr. Ogirala Hima Bindu"
                   className="w-full h-full object-cover rounded-[2.5rem]"
                 />
@@ -486,7 +487,7 @@ export default function App() {
           <CylinderCarousel items={[
             { title: "Dr. Hima Bindu", src: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Doctor Photo
             { title: "Clinic Entrance", src: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Sign Board
-            { title: "Best Dental Logo", src: "/favicon.svg" }, 
+            { title: "Best Dental Logo", src: {clinicLogo} }, 
             { title: "Treatment Room", src: "https://images.unsplash.com/photo-1600170311833-c2cf5280ce49?q=80&w=800&auto=format&fit=crop" },
             { title: "Advanced Tech", src: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=800&auto=format&fit=crop" }
           ]} />
@@ -650,7 +651,7 @@ export default function App() {
             {/* Brand */}
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <img src="/favicon.svg" alt="Best Dental Logo" className="w-12 h-12 rounded-xl object-cover shadow-sm" />
+                <img src={clinicLogo} alt="Best Dental Logo" className="w-12 h-12 rounded-xl object-cover shadow-sm" />
                 <span className="text-2xl font-bold text-white tracking-tight">Best Dental</span>
               </div>
               <p className="text-emerald-100/70">Premium dental care in Tenali by Dr. Ogirala Hima Bindu. Transforming smiles, changing lives.</p>
