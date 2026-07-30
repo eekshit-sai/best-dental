@@ -258,7 +258,7 @@ export default function App() {
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
                 Transforming Smiles. <br />
                 <span className="text-slate-400">Discover your</span> <br />
-                <MorphText words={["NEW SMILE", "CONFIDENCE", "BEST DENTAL"]} className="h-[1.2em] min-w-[300px] text-left inline-flex" />
+                <MorphText words={["NEW SMILE", "CONFIDENCE", "BEST DENTAL"]} className="h-[1.2em] min-w-[500px] justify-start text-left inline-flex" />
               </h1>
             </Reveal>
 
