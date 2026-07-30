@@ -192,7 +192,7 @@ export default function App() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3 bg-[#0a2e25]/95 backdrop-blur-xl shadow-lg border-b border-white/10' : 'py-5 bg-[#0a2e25]'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 cursor-pointer" onClick={() => scrollTo('home')}>
-            <img src="image_48b694.jpg" alt="Best Dental Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover shadow-sm" />
+            <img src="/favicon.svg" alt="Best Dental Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover shadow-sm" />
             <span className="text-xl md:text-2xl font-bold tracking-tight text-amber-400">Best Dental</span>
           </div>
 
@@ -486,7 +486,7 @@ export default function App() {
           <CylinderCarousel items={[
             { title: "Dr. Hima Bindu", src: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Doctor Photo
             { title: "Clinic Entrance", src: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Sign Board
-            { title: "Best Dental Logo", src: "image_48b694.jpg" }, 
+            { title: "Best Dental Logo", src: "/favicon.svg" }, 
             { title: "Treatment Room", src: "https://images.unsplash.com/photo-1600170311833-c2cf5280ce49?q=80&w=800&auto=format&fit=crop" },
             { title: "Advanced Tech", src: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=800&auto=format&fit=crop" }
           ]} />
@@ -569,7 +569,7 @@ export default function App() {
                 <div className="h-[300px] w-full rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
                   {/* Embedded Google Map - Coordinates approximate to Tenali center for generic representation */}
                   <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d61332.964434942475!2d80.6053359654162!3d16.23769931441772!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a07011d871929%3A0xc3cfad1d43a75878!2sTenali%2C%20Andhra%20Pradesh!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3187.19094872716!2d80.6497227!3d16.2402478!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a075dcb51d7b7%3A0x93bcfccebd9cdf46!2sBEST%20DENTAL%20HOSPITAL!5e1!3m2!1sen!2sin!4v1785426570350!5m2!1sen!2sin"  
                     width="100%" 
                     height="100%" 
                     style={{ border: 0 }} 
@@ -650,7 +650,7 @@ export default function App() {
             {/* Brand */}
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <img src="image_48b694.jpg" alt="Best Dental Logo" className="w-12 h-12 rounded-xl object-cover shadow-sm" />
+                <img src="/favicon.svg" alt="Best Dental Logo" className="w-12 h-12 rounded-xl object-cover shadow-sm" />
                 <span className="text-2xl font-bold text-white tracking-tight">Best Dental</span>
               </div>
               <p className="text-emerald-100/70">Premium dental care in Tenali by Dr. Ogirala Hima Bindu. Transforming smiles, changing lives.</p>
