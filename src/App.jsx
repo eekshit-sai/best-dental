@@ -28,7 +28,7 @@ const MorphText = ({ words, className }) => {
           animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
           exit={{ y: -40, opacity: 0, filter: 'blur(8px)' }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600"
+          className="absolute font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#0a2e25] to-emerald-600"
         >
           {words[index]}
         </motion.span>
@@ -50,8 +50,8 @@ const AnimatedRays = () => {
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/80 to-white backdrop-blur-[2px]" />
-      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-100/40 rounded-full blur-3xl opacity-50 mix-blend-multiply pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-indigo-50/50 rounded-full blur-3xl opacity-50 mix-blend-multiply pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-emerald-100/40 rounded-full blur-3xl opacity-50 mix-blend-multiply pointer-events-none" />
+      <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-teal-50/50 rounded-full blur-3xl opacity-50 mix-blend-multiply pointer-events-none" />
     </div>
   );
 };
@@ -167,11 +167,11 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-emerald-200 selection:text-[#0a2e25] overflow-x-hidden">
       
       {/* Scroll Progress Bar */}
       <motion.div 
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 origin-left z-50"
+        className="fixed top-0 left-0 right-0 h-1 bg-amber-400 origin-left z-[60]"
         style={{ scaleX }}
       />
 
@@ -189,31 +189,34 @@ export default function App() {
       </a>
 
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled ? 'py-3 bg-white/70 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border-b border-white/20' : 'py-5 bg-transparent'}`}>
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => scrollTo('home')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg">
-              <Smile size={24} />
-            </div>
-            <span className="text-xl font-bold tracking-tight">Best Dental</span>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'py-3 bg-[#0a2e25]/95 backdrop-blur-xl shadow-lg border-b border-white/10' : 'py-5 bg-[#0a2e25]'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3 cursor-pointer" onClick={() => scrollTo('home')}>
+            <img src="image_48b694.jpg" alt="Best Dental Logo" className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover shadow-sm" />
+            <span className="text-xl md:text-2xl font-bold tracking-tight text-amber-400">Best Dental</span>
           </div>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-emerald-50">
             {['Home', 'About', 'Services', 'Reviews', 'Gallery', 'Contact'].map((item) => (
-              <button key={item} onClick={() => scrollTo(item.toLowerCase())} className="hover:text-blue-600 transition-colors">
+              <button key={item} onClick={() => scrollTo(item.toLowerCase())} className="hover:text-amber-400 transition-colors">
                 {item}
               </button>
             ))}
-            <button onClick={() => scrollTo('contact')} className="bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-slate-800 transition-colors shadow-md">
+            <button onClick={() => scrollTo('contact')} className="bg-amber-400 text-[#0a2e25] font-bold px-6 py-2.5 rounded-full hover:bg-amber-500 transition-colors shadow-md">
               Book Appointment
             </button>
           </div>
 
-          {/* Mobile Nav Toggle */}
-          <button className="md:hidden p-2 text-slate-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Nav Toggle & Always Visible Button */}
+          <div className="flex items-center gap-2 sm:gap-3 md:hidden">
+            <button onClick={() => scrollTo('contact')} className="bg-amber-400 text-[#0a2e25] text-[11px] sm:text-xs font-bold px-3 py-2 sm:px-4 rounded-full hover:bg-amber-500 transition-colors shadow-md whitespace-nowrap">
+              Book Now
+            </button>
+            <button className="p-1 sm:p-2 text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -223,17 +226,14 @@ export default function App() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white/95 backdrop-blur-3xl border-b border-slate-100 overflow-hidden"
+              className="md:hidden bg-[#0a2e25] border-b border-white/10 overflow-hidden"
             >
               <div className="px-6 py-4 flex flex-col gap-4 text-center">
                 {['Home', 'About', 'Services', 'Reviews', 'Gallery', 'Contact'].map((item) => (
-                  <button key={item} onClick={() => scrollTo(item.toLowerCase())} className="py-2 font-medium text-slate-600">
+                  <button key={item} onClick={() => scrollTo(item.toLowerCase())} className="py-2 font-medium text-emerald-50 hover:text-amber-400">
                     {item}
                   </button>
                 ))}
-                <button onClick={() => scrollTo('contact')} className="bg-slate-900 text-white px-5 py-3 rounded-full font-medium mt-2">
-                  Book Appointment
-                </button>
               </div>
             </motion.div>
           )}
@@ -241,13 +241,13 @@ export default function App() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+      <section id="home" className="relative min-h-screen flex items-center justify-center pt-24 overflow-hidden">
         <AnimatedRays />
         
         <div className="max-w-7xl mx-auto px-6 w-full grid lg:grid-cols-2 gap-12 items-center relative z-10">
           <div className="space-y-8 text-center lg:text-left pt-10 lg:pt-0">
             <Reveal>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50/80 border border-blue-100 text-blue-700 text-sm font-semibold backdrop-blur-md mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50/80 border border-emerald-100 text-emerald-800 text-sm font-semibold backdrop-blur-md mb-4">
                 <Sparkles size={16} />
                 <span>Dr. Ogirala Hima Bindu • 10+ Years Exp</span>
               </div>
@@ -285,7 +285,7 @@ export default function App() {
           <Reveal direction="left" delay={0.4}>
             <div className="relative mx-auto w-full max-w-[500px] aspect-[4/5] lg:aspect-square">
               {/* Decorative background elements for image */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-blue-100 to-indigo-50 rounded-[3rem] rotate-3 scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-100 to-teal-50 rounded-[3rem] rotate-3 scale-105" />
               <div className="absolute inset-0 bg-white/40 backdrop-blur-3xl border border-white/60 rounded-[3rem] shadow-2xl overflow-hidden p-2">
                 <img 
                   src="https://images.unsplash.com/photo-1590611936760-eeb9bc500b75?q=80&w=1000&auto=format&fit=crop" 
@@ -300,7 +300,7 @@ export default function App() {
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-xl border border-white flex items-center gap-4"
               >
-                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center">
                   <Star fill="currentColor" size={24} />
                 </div>
                 <div>
@@ -314,7 +314,7 @@ export default function App() {
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                 className="absolute top-10 -right-8 bg-white/90 backdrop-blur-xl p-4 rounded-2xl shadow-xl border border-white flex items-center gap-4"
               >
-                <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center">
                   <Shield size={24} />
                 </div>
                 <div>
@@ -349,13 +349,13 @@ export default function App() {
             <div className="space-y-8">
               <Reveal>
                 <h2 className="text-4xl md:text-5xl font-bold text-slate-900">
-                  Meet Your Expert <span className="text-blue-600">Implantologist</span>
+                  Meet Your Expert <span className="text-emerald-700">Implantologist</span>
                 </h2>
               </Reveal>
               <Reveal delay={0.1}>
                 <div className="space-y-4">
                   <h3 className="text-2xl font-semibold text-slate-800">Dr. Ogirala Hima Bindu</h3>
-                  <p className="text-blue-600 font-medium text-lg">BDS., MOI (Implantologist)</p>
+                  <p className="text-emerald-700 font-medium text-lg">BDS., MOI (Implantologist)</p>
                   <p className="text-slate-600 leading-relaxed text-lg">
                     With over a decade of dedicated experience, Dr. Bindu combines advanced dental science with an artistic eye to design perfect smiles. Her patient-first approach ensures every treatment is personalized, painless, and precise.
                   </p>
@@ -369,7 +369,7 @@ export default function App() {
                     "Painless Treatments", "Trusted by Thousands"
                   ].map((feature, idx) => (
                     <div key={idx} className="flex items-center gap-3">
-                      <CheckCircle2 className="text-blue-500" size={24} />
+                      <CheckCircle2 className="text-emerald-600" size={24} />
                       <span className="font-medium text-slate-700">{feature}</span>
                     </div>
                   ))}
@@ -407,7 +407,7 @@ export default function App() {
                   whileHover={{ y: -8 }}
                   className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 group h-full"
                 >
-                  <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                  <div className="w-14 h-14 bg-emerald-50 text-emerald-700 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-[#0a2e25] group-hover:text-white transition-all duration-300">
                     <service.icon size={28} />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-3">{service.title}</h3>
@@ -420,16 +420,16 @@ export default function App() {
       </section>
 
       {/* Stats & Why Choose Us */}
-      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+      <section className="py-24 bg-[#0a2e25] text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=2000&auto=format&fit=crop')] opacity-10 bg-cover bg-center mix-blend-luminosity" />
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 to-slate-900/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a2e25]/50 to-[#0a2e25]/90" />
         
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             
             <div className="space-y-8">
               <Reveal>
-                <h2 className="text-4xl md:text-5xl font-bold mb-6">Why Patients <span className="text-blue-400">Trust Us</span></h2>
+                <h2 className="text-4xl md:text-5xl font-bold mb-6">Why Patients <span className="text-amber-400">Trust Us</span></h2>
               </Reveal>
               
               <div className="grid sm:grid-cols-2 gap-6">
@@ -440,7 +440,7 @@ export default function App() {
                 ].map((item, idx) => (
                   <Reveal key={idx} delay={idx * 0.1}>
                     <div className="flex items-center gap-4 bg-white/5 backdrop-blur-md p-4 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
-                      <div className="w-10 h-10 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 bg-amber-400/20 text-amber-400 rounded-full flex items-center justify-center flex-shrink-0">
                         <CheckCircle2 size={20} />
                       </div>
                       <span className="font-medium text-slate-200">{item}</span>
@@ -460,9 +460,9 @@ export default function App() {
                 <Reveal key={idx} delay={idx * 0.1}>
                   <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 text-center">
                     <h3 className="text-4xl md:text-5xl font-bold text-white mb-2 flex items-center justify-center gap-1">
-                      {stat.number} {stat.star && <Star className="text-yellow-400" fill="currentColor" size={32}/>}
+                      {stat.number} {stat.star && <Star className="text-amber-400" fill="currentColor" size={32}/>}
                     </h3>
-                    <p className="text-blue-200 font-medium">{stat.label}</p>
+                    <p className="text-emerald-200 font-medium">{stat.label}</p>
                   </div>
                 </Reveal>
               ))}
@@ -486,7 +486,7 @@ export default function App() {
           <CylinderCarousel items={[
             { title: "Dr. Hima Bindu", src: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Doctor Photo
             { title: "Clinic Entrance", src: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Sign Board
-            { title: "Best Dental Logo", src: "https://images.unsplash.com/photo-1606811841689-23dfddce3e95?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Logo
+            { title: "Best Dental Logo", src: "image_48b694.jpg" }, 
             { title: "Treatment Room", src: "https://images.unsplash.com/photo-1600170311833-c2cf5280ce49?q=80&w=800&auto=format&fit=crop" },
             { title: "Advanced Tech", src: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=800&auto=format&fit=crop" }
           ]} />
@@ -549,13 +549,13 @@ export default function App() {
                 ].map((info, idx) => (
                   <Reveal key={idx} delay={idx * 0.1}>
                     <div className="flex items-start gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                      <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center flex-shrink-0">
                         <info.icon size={24} />
                       </div>
                       <div>
                         <h4 className="font-semibold text-slate-900">{info.title}</h4>
                         {info.link ? (
-                          <a href={info.link} className="text-slate-600 hover:text-blue-600 transition-colors">{info.detail}</a>
+                          <a href={info.link} className="text-slate-600 hover:text-emerald-700 transition-colors">{info.detail}</a>
                         ) : (
                           <p className="text-slate-600">{info.detail}</p>
                         )}
@@ -585,41 +585,39 @@ export default function App() {
             <Reveal direction="left">
               <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl border border-slate-100">
                 <h3 className="text-3xl font-bold text-slate-900 mb-8">Book an Appointment</h3>
-                
                 <form action="https://api.web3forms.com/submit" method="POST" className="space-y-6">
-                  {/* Web3Forms Access Key - Replace the value with your actual key */}
-                  <input type="hidden" name="access_key" value="5a908874-0be3-436c-8310-ddf3a476c48b" />
-                  <input type="hidden" name="subject" value="New Appointment Request - Best Dental" />
-                  <input type="hidden" name="from_name" value="Best Dental Website" />
                   
-                  {/* Optional: Add a redirect URL if you want them to go to a custom success page instead of Web3Form's default page */}
-                  {/* <input type="hidden" name="redirect" value="https://YOUR_GITHUB_USERNAME.github.io/best-dental/" /> */}
+                  {/* Web3Forms Access Key */}
+                  <input type="hidden" name="access_key" value="5a908874-0be3-436c-8310-ddf3a476c48b" />
+                  
+                  {/* Optional: Redirect back to your site after submission instead of Web3Forms default page */}
+                  {/* <input type="hidden" name="redirect" value="https://your-github-url.github.io/best-dental/" /> */}
 
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Full Name</label>
-                      <input name="Patient Name" type="text" required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="John Doe" />
+                      <input type="text" name="name" required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all" placeholder="John Doe" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Phone Number</label>
-                      <input name="Phone Number" type="tel" required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="+91 00000 00000" />
+                      <input type="tel" name="phone" required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all" placeholder="+91 00000 00000" />
                     </div>
                   </div>
                   
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Email Address</label>
-                      <input name="Email" type="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="john@example.com" />
+                      <input type="email" name="email" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all" placeholder="john@example.com" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-slate-700">Preferred Date</label>
-                      <input name="Preferred Date" type="date" required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                      <input type="date" name="date" required className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all" />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Treatment Needed</label>
-                    <select name="Treatment" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <select name="treatment" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all">
                       <option>Consultation</option>
                       <option>Dental Implants</option>
                       <option>Root Canal</option>
@@ -630,10 +628,10 @@ export default function App() {
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-700">Message (Optional)</label>
-                    <textarea name="Message" rows="4" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none" placeholder="How can we help you?"></textarea>
+                    <textarea name="message" rows="4" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 transition-all resize-none" placeholder="How can we help you?"></textarea>
                   </div>
 
-                  <button type="submit" className="w-full bg-slate-900 text-white font-semibold py-4 rounded-xl hover:bg-blue-600 transition-colors shadow-lg shadow-slate-900/20">
+                  <button type="submit" className="w-full bg-[#0a2e25] text-white font-semibold py-4 rounded-xl hover:bg-emerald-800 transition-colors shadow-lg shadow-[#0a2e25]/20">
                     Confirm Appointment
                   </button>
                 </form>
@@ -645,24 +643,22 @@ export default function App() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 pt-20 pb-10 border-t border-white/10">
+      <footer className="bg-[#0a2e25] pt-20 pb-10 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             
             {/* Brand */}
             <div className="space-y-6">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white">
-                  <Smile size={24} />
-                </div>
+              <div className="flex items-center gap-3">
+                <img src="image_48b694.jpg" alt="Best Dental Logo" className="w-12 h-12 rounded-xl object-cover shadow-sm" />
                 <span className="text-2xl font-bold text-white tracking-tight">Best Dental</span>
               </div>
-              <p className="text-slate-400">Premium dental care in Tenali by Dr. Ogirala Hima Bindu. Transforming smiles, changing lives.</p>
+              <p className="text-emerald-100/70">Premium dental care in Tenali by Dr. Ogirala Hima Bindu. Transforming smiles, changing lives.</p>
               <div className="flex gap-4">
-                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-blue-600 transition-colors">
+                <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-amber-400 hover:text-[#0a2e25] transition-all">
                   <span className="font-bold">IG</span>
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white hover:bg-green-500 transition-colors">
+                <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-green-500 transition-all">
                   <MessageCircle size={20} />
                 </a>
               </div>
@@ -671,9 +667,9 @@ export default function App() {
             {/* Links */}
             <div>
               <h4 className="text-white font-bold mb-6">Quick Links</h4>
-              <ul className="space-y-4 text-slate-400">
+              <ul className="space-y-4 text-emerald-100/70">
                 {['Home', 'About Dr. Bindu', 'Our Services', 'Gallery', 'Patient Reviews'].map(link => (
-                  <li key={link}><a href="#" onClick={(e) => { e.preventDefault(); scrollTo(link.split(' ')[0].toLowerCase() === 'about' ? 'about' : link.split(' ')[0].toLowerCase() === 'patient' ? 'reviews' : link.split(' ')[0].toLowerCase()); }} className="hover:text-blue-400 transition-colors">{link}</a></li>
+                  <li key={link}><a href="#" onClick={(e) => { e.preventDefault(); scrollTo(link.split(' ')[0].toLowerCase() === 'about' ? 'about' : link.split(' ')[0].toLowerCase() === 'patient' ? 'reviews' : link.split(' ')[0].toLowerCase()); }} className="hover:text-amber-400 transition-colors">{link}</a></li>
                 ))}
               </ul>
             </div>
@@ -681,29 +677,29 @@ export default function App() {
             {/* Services */}
             <div>
               <h4 className="text-white font-bold mb-6">Treatments</h4>
-              <ul className="space-y-4 text-slate-400">
-                <li><a href="#services" className="hover:text-blue-400 transition-colors">Dental Implants</a></li>
-                <li><a href="#services" className="hover:text-blue-400 transition-colors">Root Canal Treatment</a></li>
-                <li><a href="#services" className="hover:text-blue-400 transition-colors">Smile Designing</a></li>
-                <li><a href="#services" className="hover:text-blue-400 transition-colors">Aligners & Braces</a></li>
-                <li><a href="#services" className="hover:text-blue-400 transition-colors">Teeth Whitening</a></li>
+              <ul className="space-y-4 text-emerald-100/70">
+                <li><a href="#services" className="hover:text-amber-400 transition-colors">Dental Implants</a></li>
+                <li><a href="#services" className="hover:text-amber-400 transition-colors">Root Canal Treatment</a></li>
+                <li><a href="#services" className="hover:text-amber-400 transition-colors">Smile Designing</a></li>
+                <li><a href="#services" className="hover:text-amber-400 transition-colors">Aligners & Braces</a></li>
+                <li><a href="#services" className="hover:text-amber-400 transition-colors">Teeth Whitening</a></li>
               </ul>
             </div>
 
             {/* Contact */}
             <div>
               <h4 className="text-white font-bold mb-6">Contact Us</h4>
-              <ul className="space-y-4 text-slate-400">
+              <ul className="space-y-4 text-emerald-100/70">
                 <li className="flex items-start gap-3">
-                  <MapPin size={20} className="text-blue-500 shrink-0" />
+                  <MapPin size={20} className="text-amber-400 shrink-0" />
                   <span>Head Office, Tenali, AP</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Phone size={20} className="text-blue-500 shrink-0" />
+                  <Phone size={20} className="text-amber-400 shrink-0" />
                   <a href="tel:9441453157" className="hover:text-white">9441453157</a>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Mail size={20} className="text-blue-500 shrink-0" />
+                  <Mail size={20} className="text-amber-400 shrink-0" />
                   <a href="mailto:bestdentalimplantcenter@gmail.com" className="hover:text-white truncate">bestdentalimplantcenter@...</a>
                 </li>
               </ul>
@@ -712,8 +708,8 @@ export default function App() {
           </div>
 
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm">© {new Date().getFullYear()} Best Dental Clinic. All rights reserved.</p>
-            <p className="text-slate-500 text-sm">Designed with precision.</p>
+            <p className="text-emerald-100/50 text-sm">© {new Date().getFullYear()} Best Dental Clinic. All rights reserved.</p>
+            <p className="text-emerald-100/50 text-sm">Designed with precision.</p>
           </div>
         </div>
       </footer>
