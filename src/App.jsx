@@ -8,6 +8,15 @@ import {
 } from 'lucide-react';
 import clinicLogo from './assets/logo.svg';
 import drimage from "./assets/dr_image.jpeg";
+
+import crowns from "./assets/rotating/crowns.jpeg";
+import smileDesigningImg from "./assets/rotating/smile designing.jpeg";
+import rootCanalImg from "./assets/rotating/root canal.jpeg";
+import extractionImg from "./assets/rotating/extraction.jpeg";
+import implantsImg from "./assets/rotating/implants.jpeg";
+import kidDentistryImg from "./assets/rotating/kids.jpeg";
+import generalImg from "./assets/rotating/general.jpeg";
+
 // --- CUSTOM VENGENCE UI COMPONENTS ---
 
 const MorphText = ({ words, className }) => {
@@ -485,11 +494,12 @@ export default function App() {
         <Reveal>
           {/* CylinderCarousel renders the 3D rotating display */}
           <CylinderCarousel items={[
-            { title: "Dr. Hima Bindu", src: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Doctor Photo
-            { title: "Clinic Entrance", src: "https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=800&auto=format&fit=crop" }, // Placeholder for Sign Board
-            { title: "Best Dental Logo", src: {clinicLogo} }, 
-            { title: "Treatment Room", src: "https://images.unsplash.com/photo-1600170311833-c2cf5280ce49?q=80&w=800&auto=format&fit=crop" },
-            { title: "Advanced Tech", src: "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=800&auto=format&fit=crop" }
+            { title: "Smile Designing", src: smileDesigningImg }, // Placeholder for Sign Board
+            { title: "Root Canal", src: rootCanalImg }, 
+            { title: "Extraction", src: extractionImg },
+            { title: "Implants", src: implantsImg },
+            { title: "Kid Dentistry", src: kidDentistryImg },
+            { title: "General", src: generalImg }
           ]} />
         </Reveal>
       </section>
