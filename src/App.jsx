@@ -4,7 +4,8 @@ import {
   Phone, Mail, MapPin, Clock,  
   Star, Shield, Award, Stethoscope, Smile, Activity, 
   Baby, Syringe, Sparkles, Menu, X, CheckCircle2,
-  ArrowRight, MessageCircle, ChevronLeft, ChevronRight
+  ArrowRight, MessageCircle, ChevronLeft, ChevronRight,
+  Loader2, Navigation, AlertCircle, Calendar, Check, ExternalLink
 } from 'lucide-react';
 import clinicLogo from './assets/logo.jpg';
 import drimage from "./assets/dr_image.jpeg";
@@ -15,6 +16,52 @@ import extractionImg from "./assets/rotating/extraction.jpeg";
 import implantsImg from "./assets/rotating/implants.jpeg";
 import kidDentistryImg from "./assets/rotating/kids.jpeg";
 import generalImg from "./assets/rotating/general.jpeg";
+
+// --- CLINIC BRANCH CONFIGURATION ---
+const CLINIC_BRANCHES = [
+  {
+    id: "head-office",
+    name: "Head Office (Main Branch)",
+    shortName: "Head Office",
+    badge: "Main Surgical & Implant Center",
+    landmark: "Near RTC Bus Stand",
+    address: "Near RTC Bus Stand, Main Road, Tenali, Andhra Pradesh 522201",
+    phone: "+91 94414 53157",
+    phoneRaw: "9441453157",
+    phoneLink: "tel:9441453157",
+    email: "bestdentalimplantcenter@gmail.com",
+    timings: "Mon - Sat: 9:30 AM - 9:00 PM | Sun: 9:30 AM - 1:00 PM",
+    features: [
+      "Advanced Dental Implant Center",
+      "Digital OPG Panoramic X-Ray",
+      "Full Surgical Suite",
+      "Emergency Dental Care"
+    ],
+    directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=BEST+DENTAL+HOSPITAL+Tenali",
+    embedMapUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3187.19094872716!2d80.6497227!3d16.2402478!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a075dcb51d7b7%3A0x93bcfccebd9cdf46!2sBEST%20DENTAL%20HOSPITAL!5e1!3m2!1sen!2sin!4v1785426570350!5m2!1sen!2sin",
+  },
+  {
+    id: "city-branch",
+    name: "City Branch",
+    shortName: "City Branch",
+    badge: "Central Tenali Clinic",
+    landmark: "Bose Road / Market Center",
+    address: "Bose Road, Near Market Center, Tenali, Andhra Pradesh 522201",
+    phone: "+91 94414 53157",
+    phoneRaw: "9441453157",
+    phoneLink: "tel:9441453157",
+    email: "bestdentalimplantcenter@gmail.com",
+    timings: "Mon - Sat: 10:00 AM - 8:30 PM | Sun: 10:00 AM - 1:00 PM",
+    features: [
+      "Smile Designing & Aesthetic Veneers",
+      "Pediatric Dentistry for Kids",
+      "Single-Sitting Root Canal Treatments",
+      "Clear Aligners & Teeth Straightening"
+    ],
+    directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=Bose+Road+Tenali",
+    embedMapUrl: "https://maps.google.com/maps?q=Bose+Road+Tenali+Andhra+Pradesh&t=&z=15&ie=UTF8&iwloc=&output=embed",
+  }
+];
 
 // --- CUSTOM VENGENCE UI COMPONENTS ---
 
@@ -361,6 +408,25 @@ const Reveal = ({ children, delay = 0, width = "100%", direction = "up" }) => {
 export default function App() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [selectedBranchId, setSelectedBranchId] = useState("head-office");
+
+  // Controlled appointment form state
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    date: "",
+    timeSlot: "Morning (10:00 AM - 1:00 PM)",
+    branch: CLINIC_BRANCHES[0].name,
+    treatment: "Consultation & General Checkup",
+    message: "",
+  });
+  const [formStatus, setFormStatus] = useState("idle"); // 'idle' | 'submitting' | 'success' | 'error'
+  const [errorMessage, setErrorMessage] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [submittedData, setSubmittedData] = useState(null);
+
+  const activeBranch = CLINIC_BRANCHES.find(b => b.id === selectedBranchId) || CLINIC_BRANCHES[0];
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -368,9 +434,9 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open to prevent awkward page scrolling behind menu
+  // Lock body scroll when mobile menu or confirmation modal is open
   useEffect(() => {
-    if (mobileMenuOpen) {
+    if (mobileMenuOpen || formStatus === 'success') {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -378,7 +444,106 @@ export default function App() {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, formStatus]);
+
+  // Handle ESC key to dismiss confirmation modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && formStatus === 'success') {
+        setFormStatus('idle');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [formStatus]);
+
+  const validatePhone = (phoneStr) => {
+    const cleaned = (phoneStr || "").replace(/[\s\-()]/g, "");
+    const match = cleaned.match(/^(?:(?:\+?91)|0)?([6-9]\d{9})$/);
+    return match ? match[1] : null;
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "phone" && phoneError) {
+      setPhoneError("");
+    }
+  };
+
+  const handleBranchSelect = (branch) => {
+    setSelectedBranchId(branch.id);
+    setFormData((prev) => ({
+      ...prev,
+      branch: branch.name,
+    }));
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const validMobile = validatePhone(formData.phone);
+    if (!validMobile) {
+      setPhoneError("Please enter a valid 10-digit mobile number (e.g. 94414 53157)");
+      return;
+    }
+    setPhoneError("");
+    setFormStatus("submitting");
+    setErrorMessage("");
+
+    try {
+      const payload = {
+        access_key: "5a908874-0be3-436c-8310-ddf3a476c48b",
+        subject: `New Appointment Request: ${formData.name} (${formData.branch})`,
+        from_name: "Best Dental Clinic Website",
+        name: formData.name,
+        phone: validMobile,
+        email: formData.email ? formData.email : "Not provided",
+        branch: formData.branch,
+        preferred_date: formData.date,
+        preferred_slot: formData.timeSlot,
+        treatment: formData.treatment,
+        message: formData.message ? formData.message : "None",
+      };
+
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSubmittedData({ ...formData, phone: validMobile });
+        setFormStatus("success");
+      } else {
+        setErrorMessage(data.message || "Failed to submit appointment request. Please try again.");
+        setFormStatus("error");
+      }
+    } catch (err) {
+      console.error("Booking submission error:", err);
+      setErrorMessage("Network issue detected. Please check your connection or call us directly at 9441453157.");
+      setFormStatus("error");
+    }
+  };
+
+  const handleResetForm = () => {
+    setFormData({
+      name: "",
+      phone: "",
+      email: "",
+      date: "",
+      timeSlot: "Morning (10:00 AM - 1:00 PM)",
+      branch: activeBranch.name,
+      treatment: "Consultation & General Checkup",
+      message: "",
+    });
+    setPhoneError("");
+    setErrorMessage("");
+    setFormStatus("idle");
+  };
 
   const scrollTo = (id) => {
     const el = document.getElementById(id);
@@ -391,19 +556,130 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-purple-200 selection:text-[#4B006E] overflow-x-hidden">
 
-      {/* Floating WhatsApp CTA */}
-      <a 
-        href="https://wa.me/919441453157" 
-        target="_blank" 
-        rel="noreferrer"
-        aria-label="Chat with Best Dental on WhatsApp"
-        className="fixed bottom-5 sm:bottom-6 right-4 sm:right-6 z-40 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white p-3.5 sm:p-4 rounded-full shadow-2xl transition-all flex items-center justify-center group min-w-[52px] min-h-[52px] border border-white/20"
+      {/* Floating Dual Quick Actions (Call + WhatsApp) */}
+      <div 
+        className="fixed bottom-5 sm:bottom-6 right-4 sm:right-6 z-40 flex items-center gap-2 pointer-events-auto"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <MessageCircle size={26} className="sm:w-7 sm:h-7" />
-        <span className="hidden sm:inline-block absolute right-full mr-3 bg-white text-slate-800 text-sm font-semibold py-1.5 px-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-          Chat with us!
-        </span>
-      </a>
+        <a 
+          href="tel:9441453157"
+          aria-label="Call Best Dental Clinic at 9441453157"
+          className="bg-white/95 hover:bg-white text-slate-800 hover:text-[#4B006E] active:scale-95 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.18)] border border-slate-200/90 transition-all flex items-center gap-2 min-h-[48px] backdrop-blur-md group"
+        >
+          <div className="w-7 h-7 rounded-full bg-purple-100 text-[#4B006E] flex items-center justify-center shrink-0 group-hover:bg-purple-200 transition-colors">
+            <Phone size={15} />
+          </div>
+          <span className="text-xs sm:text-sm font-bold tracking-tight pr-0.5 text-slate-800">Call</span>
+        </a>
+
+        <a 
+          href="https://wa.me/919441453157" 
+          target="_blank" 
+          rel="noreferrer"
+          aria-label="Chat with Best Dental Clinic on WhatsApp"
+          className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full shadow-[0_8px_30px_rgb(5,150,105,0.35)] transition-all flex items-center gap-2 min-h-[48px] border border-emerald-500/40 backdrop-blur-md group"
+        >
+          <div className="w-7 h-7 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 group-hover:bg-white/30 transition-colors">
+            <MessageCircle size={17} />
+          </div>
+          <span className="text-xs sm:text-sm font-bold tracking-tight pr-0.5">WhatsApp</span>
+        </a>
+      </div>
+
+      {/* Appointment Confirmation Modal */}
+      <AnimatePresence>
+        {formStatus === "success" && submittedData && (
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirmation-modal-title"
+          >
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setFormStatus("idle")}
+              className="fixed inset-0 bg-slate-900/65 backdrop-blur-sm"
+              aria-hidden="true"
+            />
+
+            {/* Modal Card */}
+            <motion.div 
+              initial={{ scale: 0.92, opacity: 0, y: 16 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 16 }}
+              transition={{ type: "spring", damping: 25, stiffness: 320 }}
+              className="relative bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 sm:p-8 z-10 my-8 overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#4B006E] via-purple-600 to-amber-400" />
+              
+              <button 
+                onClick={() => setFormStatus("idle")}
+                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 rounded-full hover:bg-slate-100 transition-colors"
+                aria-label="Close confirmation dialog"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="text-center pt-2">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ring-emerald-50/60 shadow-inner">
+                  <CheckCircle2 size={40} className="sm:w-12 sm:h-12" />
+                </div>
+
+                <h3 id="confirmation-modal-title" className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+                  Appointment Request Sent!
+                </h3>
+                <p className="text-slate-600 text-sm sm:text-base mb-6">
+                  Thank you, <span className="font-semibold text-slate-800">{submittedData.name}</span>! Dr. Ogirala Hima Bindu's team will contact you shortly to confirm your slot.
+                </p>
+
+                {/* Recap */}
+                <div className="bg-slate-50 rounded-2xl p-4 sm:p-5 text-left border border-slate-100 mb-6 space-y-2.5 text-xs sm:text-sm">
+                  <div className="flex items-start justify-between pb-2 border-b border-slate-200/70 gap-2">
+                    <span className="text-slate-500 font-medium">Branch</span>
+                    <span className="text-slate-900 font-semibold text-right">{submittedData.branch}</span>
+                  </div>
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/70 gap-2">
+                    <span className="text-slate-500 font-medium">Date & Slot</span>
+                    <span className="text-slate-900 font-semibold">{submittedData.date} • {submittedData.timeSlot}</span>
+                  </div>
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200/70 gap-2">
+                    <span className="text-slate-500 font-medium">Treatment</span>
+                    <span className="text-[#4B006E] font-semibold">{submittedData.treatment}</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-slate-500 font-medium">Phone</span>
+                    <span className="text-slate-900 font-semibold">+91 {submittedData.phone}</span>
+                  </div>
+                </div>
+
+                {/* Direct instant WhatsApp CTA */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a 
+                    href={`https://wa.me/919441453157?text=${encodeURIComponent(
+                      `Hello Dr. Bindu, I submitted an appointment request for ${submittedData.name} on ${submittedData.date} (${submittedData.timeSlot}) at ${submittedData.branch} for ${submittedData.treatment}. Please confirm my slot.`
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 text-sm sm:text-base min-h-[48px]"
+                  >
+                    <MessageCircle size={18} />
+                    <span>Confirm via WhatsApp</span>
+                  </a>
+                  <button 
+                    onClick={handleResetForm}
+                    className="sm:w-auto px-5 py-3.5 bg-slate-100 hover:bg-slate-200 active:scale-[0.99] text-slate-700 font-semibold rounded-xl transition-colors text-sm sm:text-base min-h-[48px]"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile Menu Backdrop */}
       <AnimatePresence>
@@ -594,8 +870,8 @@ export default function App() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
                 <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Best Dental Head Office</h3>
-                  <p className="text-white/80 text-sm sm:text-base flex items-center gap-2"><MapPin size={16}/> Tenali, Andhra Pradesh</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Best Dental Clinics</h3>
+                  <p className="text-white/80 text-sm sm:text-base flex items-center gap-2"><MapPin size={16}/> 2 Branches in Tenali, Andhra Pradesh</p>
                 </div>
               </div>
             </Reveal>
@@ -787,138 +1063,434 @@ export default function App() {
       {/* Contact Section */}
       <section id="contact" className="py-16 sm:py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
             
-            {/* Contact Info & Map */}
-            <div className="space-y-8 sm:space-y-10">
+            {/* Multi-Branch Directory & Interactive Map */}
+            <div className="space-y-6 sm:space-y-8">
               <Reveal>
-                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 sm:mb-6">Visit Our Clinic</h2>
-                <p className="text-slate-600 mb-6 sm:mb-8 text-base sm:text-lg">We have two branches in Tenali to serve you better. Schedule your visit today.</p>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100/80 text-[#4B006E] text-xs font-semibold mb-3">
+                  <MapPin size={14} />
+                  <span>2 Convenient Locations in Tenali</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 sm:mb-4">Visit Our Clinics</h2>
+                <p className="text-slate-600 text-base sm:text-lg">
+                  Both locations are equipped with modern sterilization and led by Dr. Ogirala Hima Bindu. Select a branch below to view direct directions, timings, and facilities.
+                </p>
               </Reveal>
 
-              <div className="space-y-4 sm:space-y-6">
-                {[
-                  { icon: Phone, title: "Phone / WhatsApp", detail: "9441453157", link: "tel:9441453157" },
-                  { icon: Mail, title: "Email", detail: "bestdentalimplantcenter@gmail.com", link: "mailto:bestdentalimplantcenter@gmail.com" },
-                  { icon: MapPin, title: "Address", detail: "Best Dental Head Office, Tenali (2 Branches)", link: null },
-                  { icon: Clock, title: "Timings", detail: "Mon-Sat: 9:30 AM - 9:00 PM | Sun: 9:30 AM - 1:00 PM", link: null }
-                ].map((info, idx) => (
-                  <Reveal key={idx} delay={idx * 0.1}>
-                    <div className="flex items-start gap-3.5 sm:gap-4 p-3.5 sm:p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center shrink-0">
-                        <info.icon size={20} className="sm:w-6 sm:h-6" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-semibold text-slate-900 text-sm sm:text-base">{info.title}</h4>
-                        {info.link ? (
-                          <a href={info.link} className="text-slate-600 hover:text-purple-700 transition-colors text-sm sm:text-base break-all sm:break-normal">{info.detail}</a>
-                        ) : (
-                          <p className="text-slate-600 text-sm sm:text-base">{info.detail}</p>
-                        )}
-                      </div>
-                    </div>
-                  </Reveal>
-                ))}
-              </div>
-
-              <Reveal delay={0.4}>
-                <div className="h-[250px] sm:h-[300px] w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
-                  <iframe 
-                    title="Best Dental Clinic Location Map"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3187.19094872716!2d80.6497227!3d16.2402478!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a075dcb51d7b7%3A0x93bcfccebd9cdf46!2sBEST%20DENTAL%20HOSPITAL!5e1!3m2!1sen!2sin!4v1785426570350!5m2!1sen!2sin"  
-                    width="100%" 
-                    height="100%" 
-                    style={{ border: 0 }} 
-                    allowFullScreen="" 
-                    loading="lazy" 
-                    referrerPolicy="no-referrer-when-downgrade"
-                  ></iframe>
+              {/* Interactive Branch Selector Tabs */}
+              <Reveal delay={0.1}>
+                <div className="p-1 sm:p-1.5 bg-slate-200/80 rounded-2xl flex gap-1 shadow-inner">
+                  {CLINIC_BRANCHES.map((branch) => {
+                    const isActive = activeBranch.id === branch.id;
+                    return (
+                      <button
+                        key={branch.id}
+                        type="button"
+                        onClick={() => handleBranchSelect(branch)}
+                        className={`flex-1 py-3 px-3 sm:px-4 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-2 min-h-[46px] cursor-pointer ${
+                          isActive
+                            ? "bg-[#4B006E] text-white shadow-md shadow-[#4B006E]/25"
+                            : "text-slate-700 hover:text-slate-900 hover:bg-white/60 active:bg-white/80"
+                        }`}
+                      >
+                        <MapPin size={16} className={isActive ? "text-amber-400" : "text-slate-500"} />
+                        <span className="truncate">{branch.shortName}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </Reveal>
+
+              {/* Dynamic Active Branch Detail Card */}
+              <div className="space-y-4">
+                {/* Branch Header & Landmark Card */}
+                <Reveal delay={0.15}>
+                  <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-100 shadow-sm space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span className="inline-block text-xs font-semibold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md mb-1.5">
+                          {activeBranch.badge}
+                        </span>
+                        <h3 className="text-xl sm:text-2xl font-bold text-slate-900">{activeBranch.name}</h3>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full">
+                        <Check size={12} /> Open Today
+                      </span>
+                    </div>
+
+                    {/* Address & Navigation */}
+                    <div className="flex items-start gap-3.5 pt-1">
+                      <div className="w-10 h-10 bg-purple-50 text-[#4B006E] rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                        <MapPin size={20} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-amber-600 mb-1">Landmark: {activeBranch.landmark}</p>
+                        <p className="text-slate-700 text-sm sm:text-base leading-relaxed">{activeBranch.address}</p>
+                        <a 
+                          href={activeBranch.directionsUrl} 
+                          target="_blank" 
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-[#4B006E] font-semibold text-xs sm:text-sm transition-colors group"
+                        >
+                          <Navigation size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                          <span>Get Directions on Google Maps</span>
+                          <ExternalLink size={12} className="opacity-70" />
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Timings & Direct Phone */}
+                    <div className="grid sm:grid-cols-2 gap-3 pt-3 border-t border-slate-100">
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80">
+                        <Clock size={18} className="text-[#4B006E] shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-xs text-slate-500 font-medium">Timings</p>
+                          <p className="text-xs sm:text-sm font-semibold text-slate-800 truncate">{activeBranch.timings}</p>
+                        </div>
+                      </div>
+
+                      <a 
+                        href={activeBranch.phoneLink} 
+                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 hover:bg-purple-50 transition-colors group"
+                      >
+                        <Phone size={18} className="text-[#4B006E] shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-xs text-slate-500 font-medium">Direct Clinic Line</p>
+                          <p className="text-xs sm:text-sm font-semibold text-slate-800 group-hover:text-[#4B006E]">{activeBranch.phone}</p>
+                        </div>
+                      </a>
+                    </div>
+
+                    {/* Facility Highlights */}
+                    <div className="pt-2">
+                      <p className="text-xs font-medium text-slate-500 mb-2">Key Highlights at this branch:</p>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                        {activeBranch.features.map((feature, i) => (
+                          <span 
+                            key={i} 
+                            className="inline-flex items-center gap-1 text-xs font-medium bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg"
+                          >
+                            <Sparkles size={11} className="text-amber-500 shrink-0" />
+                            <span>{feature}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </Reveal>
+
+                {/* Google Map Embed */}
+                <Reveal delay={0.25}>
+                  <div className="rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 shadow-sm bg-white">
+                    <div className="h-[240px] sm:h-[280px] w-full relative">
+                      <iframe 
+                        key={activeBranch.id}
+                        title={`Best Dental Clinic Location Map - ${activeBranch.name}`}
+                        src={activeBranch.embedMapUrl}
+                        width="100%" 
+                        height="100%" 
+                        style={{ border: 0 }} 
+                        allowFullScreen="" 
+                        loading="lazy" 
+                        referrerPolicy="no-referrer-when-downgrade"
+                      />
+                    </div>
+                    <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                      <span>Showing {activeBranch.shortName}</span>
+                      <a 
+                        href={activeBranch.directionsUrl} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="font-semibold text-[#4B006E] hover:underline inline-flex items-center gap-1"
+                      >
+                        <span>Open in Maps App</span>
+                        <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  </div>
+                </Reveal>
+              </div>
             </div>
 
-            {/* Appointment Form connected to Web3Forms */}
+            {/* Asynchronous Appointment Form */}
             <Reveal direction="left">
-              <div className="bg-white p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-xl sm:shadow-2xl border border-slate-100">
-                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-6 sm:mb-8">Book an Appointment</h3>
-                <form action="https://api.web3forms.com/submit" method="POST" className="space-y-4 sm:space-y-6">
-                  
-                  {/* Web3Forms Access Key */}
-                  <input type="hidden" name="access_key" value="5a908874-0be3-436c-8310-ddf3a476c48b" />
-                  
-                  {/* Honeypot for spam */}
-                  <input type="checkbox" name="botcheck" className="hidden" style={{ display: 'none' }} tabIndex="-1" autoComplete="off" />
-
-                  <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <label className="text-sm font-semibold text-slate-700">Full Name</label>
-                      <input 
-                        type="text" 
-                        name="name" 
-                        required 
-                        autoComplete="name"
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all text-base" 
-                        placeholder="John Doe" 
-                      />
-                    </div>
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <label className="text-sm font-semibold text-slate-700">Phone Number</label>
-                      <input 
-                        type="tel" 
-                        name="phone" 
-                        required 
-                        autoComplete="tel"
-                        inputMode="tel"
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all text-base" 
-                        placeholder="+91 00000 00000" 
-                      />
-                    </div>
+              <div className="bg-white p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[2.5rem] shadow-xl sm:shadow-2xl border border-slate-100 relative">
+                
+                {/* Form Header */}
+                <div className="mb-6 sm:mb-8">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 bg-purple-50 px-3 py-1 rounded-full mb-2">
+                    <Calendar size={13} />
+                    <span>Instant Online Booking</span>
                   </div>
-                  
-                  <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <label className="text-sm font-semibold text-slate-700">Email Address</label>
-                      <input 
-                        type="email" 
-                        name="email" 
-                        autoComplete="email"
-                        inputMode="email"
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all text-base" 
-                        placeholder="john@example.com" 
-                      />
-                    </div>
-                    <div className="space-y-1.5 sm:space-y-2">
-                      <label className="text-sm font-semibold text-slate-700">Preferred Date</label>
-                      <input 
-                        type="date" 
-                        name="date" 
-                        required 
-                        min={new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all text-base" 
-                      />
+                  <h3 className="text-2xl sm:text-3xl font-bold text-slate-900">Book an Appointment</h3>
+                  <p className="text-slate-500 text-sm mt-1">
+                    Fill out the form below. We'll immediately process your request and confirm your appointment.
+                  </p>
+                </div>
+
+                {/* Inline Submission Error Notice */}
+                {formStatus === "error" && (
+                  <div role="alert" className="mb-6 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start gap-3">
+                    <AlertCircle size={20} className="text-rose-600 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Booking Submission Failed</p>
+                      <p className="text-xs sm:text-sm mt-0.5 text-rose-700">{errorMessage}</p>
+                      <div className="mt-2.5 flex items-center gap-3">
+                        <button 
+                          type="button" 
+                          onClick={handleFormSubmit}
+                          className="text-xs font-bold underline hover:no-underline text-rose-800 cursor-pointer"
+                        >
+                          Retry Submission
+                        </button>
+                        <span className="text-rose-300">•</span>
+                        <a href="tel:9441453157" className="text-xs font-bold underline hover:no-underline text-rose-800">
+                          Call Directly: 9441453157
+                        </a>
+                      </div>
                     </div>
                   </div>
+                )}
 
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Treatment Needed</label>
-                    <select name="treatment" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all text-base">
-                      <option>Consultation</option>
-                      <option>Dental Implants</option>
-                      <option>Root Canal</option>
-                      <option>Smile Designing</option>
-                      <option>Other</option>
-                    </select>
+                {/* Inline Confirmation Card when Success */}
+                {formStatus === "success" && submittedData ? (
+                  <div className="py-6 px-4 sm:px-6 rounded-2xl bg-purple-50/60 border border-purple-100 text-center space-y-4">
+                    <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto ring-4 ring-emerald-50">
+                      <CheckCircle2 size={32} />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold text-slate-900">Appointment Request Received!</h4>
+                      <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                        Thank you, <span className="font-semibold">{submittedData.name}</span>. We've reserved your request for <span className="font-semibold">{submittedData.date}</span> at <span className="font-semibold">{submittedData.branch}</span>.
+                      </p>
+                    </div>
+
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2.5 justify-center">
+                      <a 
+                        href={`https://wa.me/919441453157?text=${encodeURIComponent(
+                          `Hello Dr. Bindu, I requested an appointment for ${submittedData.name} on ${submittedData.date} (${submittedData.timeSlot}) at ${submittedData.branch} for ${submittedData.treatment}. Please confirm.`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-md transition-all min-h-[44px]"
+                      >
+                        <MessageCircle size={16} />
+                        <span>Chat on WhatsApp</span>
+                      </a>
+                      <button 
+                        type="button"
+                        onClick={handleResetForm}
+                        className="bg-white hover:bg-slate-100 text-slate-700 font-semibold text-sm py-3 px-4 rounded-xl border border-slate-200 transition-colors min-h-[44px] cursor-pointer"
+                      >
+                        Book Another Appointment
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  <form onSubmit={handleFormSubmit} noValidate className="space-y-4 sm:space-y-5">
+                    
+                    {/* Honeypot spam defense */}
+                    <input 
+                      type="checkbox" 
+                      name="botcheck" 
+                      className="hidden" 
+                      style={{ display: 'none' }} 
+                      tabIndex="-1" 
+                      autoComplete="off" 
+                    />
 
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <label className="text-sm font-semibold text-slate-700">Message (Optional)</label>
-                    <textarea name="message" rows="3" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-600 transition-all resize-none text-base" placeholder="How can we help you?"></textarea>
-                  </div>
+                    {/* Branch Selection */}
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <label htmlFor="branch-select" className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                        <span>Select Branch *</span>
+                        <span className="text-xs text-[#4B006E] font-medium">Tenali</span>
+                      </label>
+                      <select 
+                        id="branch-select"
+                        name="branch" 
+                        value={formData.branch}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData(prev => ({ ...prev, branch: val }));
+                          const matchedBranch = CLINIC_BRANCHES.find(b => b.name === val);
+                          if (matchedBranch) {
+                            setSelectedBranchId(matchedBranch.id);
+                          }
+                        }}
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4B006E] transition-all text-base"
+                      >
+                        {CLINIC_BRANCHES.map((b) => (
+                          <option key={b.id} value={b.name}>
+                            {b.name} ({b.landmark})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <button type="submit" className="w-full bg-[#4B006E] text-white font-semibold min-h-[48px] py-3.5 sm:py-4 rounded-xl hover:bg-purple-800 active:scale-[0.99] transition-all shadow-lg shadow-[#4B006E]/20 text-base">
-                    Confirm Appointment
-                  </button>
-                </form>
+                    {/* Patient Name & Mobile Number */}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <label htmlFor="patient-name" className="text-sm font-semibold text-slate-700">Full Name *</label>
+                        <input 
+                          id="patient-name"
+                          type="text" 
+                          name="name" 
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          required 
+                          autoComplete="name"
+                          placeholder="e.g. Ramesh V." 
+                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4B006E] transition-all text-base" 
+                        />
+                      </div>
+                      
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <div className="flex justify-between items-center">
+                          <label htmlFor="patient-phone" className="text-sm font-semibold text-slate-700">Phone Number *</label>
+                          {phoneError && (
+                            <span className="text-xs text-rose-600 font-medium">{phoneError}</span>
+                          )}
+                        </div>
+                        <input 
+                          id="patient-phone"
+                          type="tel" 
+                          name="phone" 
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          onBlur={() => {
+                            if (formData.phone && !validatePhone(formData.phone)) {
+                              setPhoneError("Enter 10-digit number");
+                            }
+                          }}
+                          required 
+                          autoComplete="tel"
+                          inputMode="tel"
+                          placeholder="94414 53157" 
+                          className={`w-full px-4 py-3 rounded-xl bg-slate-50 border transition-all text-base ${
+                            phoneError 
+                              ? "border-rose-400 focus:ring-2 focus:ring-rose-500 bg-rose-50/20" 
+                              : "border-slate-200 focus:ring-2 focus:ring-[#4B006E]"
+                          }`} 
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Email (Optional) & Preferred Date */}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <label htmlFor="patient-email" className="text-sm font-semibold text-slate-700">
+                          Email <span className="text-xs font-normal text-slate-400">(Optional)</span>
+                        </label>
+                        <input 
+                          id="patient-email"
+                          type="email" 
+                          name="email" 
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          autoComplete="email"
+                          inputMode="email"
+                          placeholder="name@gmail.com" 
+                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4B006E] transition-all text-base" 
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <label htmlFor="preferred-date" className="text-sm font-semibold text-slate-700">Preferred Date *</label>
+                        <input 
+                          id="preferred-date"
+                          type="date" 
+                          name="date" 
+                          value={formData.date}
+                          onChange={handleInputChange}
+                          required 
+                          min={new Date().toISOString().split('T')[0]}
+                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4B006E] transition-all text-base" 
+                        />
+                      </div>
+                    </div>
+
+                    {/* Time Slot & Treatment */}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <label htmlFor="preferred-slot" className="text-sm font-semibold text-slate-700">Time Slot</label>
+                        <select 
+                          id="preferred-slot"
+                          name="timeSlot" 
+                          value={formData.timeSlot}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4B006E] transition-all text-base"
+                        >
+                          <option>Morning (10:00 AM - 1:00 PM)</option>
+                          <option>Afternoon (2:00 PM - 5:00 PM)</option>
+                          <option>Evening (5:00 PM - 8:30 PM)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <label htmlFor="treatment-type" className="text-sm font-semibold text-slate-700">Treatment Needed</label>
+                        <select 
+                          id="treatment-type"
+                          name="treatment" 
+                          value={formData.treatment}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4B006E] transition-all text-base"
+                        >
+                          <option>Consultation & General Checkup</option>
+                          <option>Dental Implants</option>
+                          <option>Root Canal Treatment (RCT)</option>
+                          <option>Smile Designing & Veneers</option>
+                          <option>Clear Aligners & Braces</option>
+                          <option>Pediatric / Kid Dentistry</option>
+                          <option>Tooth Extraction & Surgery</option>
+                          <option>Teeth Cleaning & Whitening</option>
+                          <option>Emergency Dental Care</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Optional Message */}
+                    <div className="space-y-1.5 sm:space-y-2">
+                      <label htmlFor="patient-message" className="text-sm font-semibold text-slate-700">
+                        Message / Dental Concern <span className="text-xs font-normal text-slate-400">(Optional)</span>
+                      </label>
+                      <textarea 
+                        id="patient-message"
+                        name="message" 
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        rows="2" 
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4B006E] transition-all resize-none text-base" 
+                        placeholder="Tell us about tooth pain, specific symptoms, or questions..."
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <button 
+                      type="submit" 
+                      disabled={formStatus === "submitting"}
+                      aria-busy={formStatus === "submitting"}
+                      className="w-full bg-[#4B006E] text-white font-semibold min-h-[50px] py-3.5 sm:py-4 rounded-xl hover:bg-purple-800 active:scale-[0.99] transition-all shadow-lg shadow-[#4B006E]/20 text-base disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      {formStatus === "submitting" ? (
+                        <>
+                          <Loader2 size={20} className="animate-spin text-amber-400" />
+                          <span>Submitting Request...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Confirm Appointment</span>
+                          <ArrowRight size={18} />
+                        </>
+                      )}
+                    </button>
+
+                    <p className="text-center text-xs text-slate-500 pt-1">
+                      🔒 Your details are kept strictly confidential. No pre-payment required.
+                    </p>
+                  </form>
+                )}
               </div>
             </Reveal>
 
@@ -983,15 +1555,25 @@ export default function App() {
               <ul className="space-y-3 sm:space-y-4 text-purple-100/80 text-sm sm:text-base">
                 <li className="flex items-start gap-3">
                   <MapPin size={20} className="text-amber-400 shrink-0 mt-0.5" />
-                  <span>Head Office, Tenali, AP</span>
+                  <div className="text-xs sm:text-sm">
+                    <span className="font-semibold text-white block">Head Office:</span>
+                    <span>Near RTC Bus Stand, Tenali</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-3">
+                  <MapPin size={20} className="text-amber-400 shrink-0 mt-0.5" />
+                  <div className="text-xs sm:text-sm">
+                    <span className="font-semibold text-white block">City Branch:</span>
+                    <span>Bose Road / Market Center, Tenali</span>
+                  </div>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone size={20} className="text-amber-400 shrink-0" />
-                  <a href="tel:9441453157" className="hover:text-amber-400 transition-colors min-h-[32px] flex items-center">9441453157</a>
+                  <a href="tel:9441453157" className="hover:text-amber-400 transition-colors min-h-[32px] flex items-center font-medium">+91 94414 53157</a>
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail size={20} className="text-amber-400 shrink-0" />
-                  <a href="mailto:bestdentalimplantcenter@gmail.com" className="hover:text-amber-400 transition-colors truncate min-h-[32px] flex items-center">bestdentalimplantcenter@...</a>
+                  <a href="mailto:bestdentalimplantcenter@gmail.com" className="hover:text-amber-400 transition-colors truncate min-h-[32px] flex items-center">bestdentalimplantcenter@gmail.com</a>
                 </li>
               </ul>
             </div>
