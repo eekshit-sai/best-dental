@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure inputs on mobile don't trigger iOS auto-zoom while maintaining crisp layout */
+input, select, textarea {
+  font-size: 16px;
+}
