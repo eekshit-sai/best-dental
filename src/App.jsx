@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { 
   Phone, Mail, MapPin, Clock,  
   Star, Shield, Award, Stethoscope, Smile, Activity, 
@@ -85,27 +85,38 @@ const LiquidMetalButton = ({ children, onClick, className = "" }) => {
 
 const CylinderCarousel = ({ items }) => {
   const [rotation, setRotation] = useState(0);
-  const [radius, setRadius] = useState(280);
-  const [cardSize, setCardSize] = useState({ width: 256, height: 256 });
-  const [isPaused, setIsPaused] = useState(false);
-  const touchStartX = useRef(0);
+  const [radius, setRadius] = useState(330);
+  const [cardSize, setCardSize] = useState({ width: 310, height: 310 });
+  const [isDragging, setIsDragging] = useState(false);
+  
+  const dragStartX = useRef(0);
+  const startRotation = useRef(0);
+  const dragDistance = useRef(0);
+  const lastX = useRef(0);
+  const velocity = useRef(0);
+  const isHovered = useRef(false);
   const theta = 360 / items.length;
 
+  // Squarish proportions with tight gaps across screen sizes
   useEffect(() => {
     const updateSize = () => {
       const w = window.innerWidth;
       if (w < 440) {
-        setRadius(135);
-        setCardSize({ width: 160, height: 210 });
-      } else if (w < 640) {
+        // Compact mobile - squarish
         setRadius(175);
-        setCardSize({ width: 190, height: 240 });
+        setCardSize({ width: 165, height: 165 });
+      } else if (w < 640) {
+        // Standard mobile - squarish
+        setRadius(200);
+        setCardSize({ width: 190, height: 190 });
       } else if (w < 1024) {
-        setRadius(230);
-        setCardSize({ width: 220, height: 260 });
+        // Tablet - squarish
+        setRadius(265);
+        setCardSize({ width: 250, height: 250 });
       } else {
-        setRadius(280);
-        setCardSize({ width: 256, height: 256 });
+        // Desktop - squarish proportions with tight ~20px gap
+        setRadius(330);
+        setCardSize({ width: 310, height: 310 });
       }
     };
     updateSize();
@@ -113,49 +124,131 @@ const CylinderCarousel = ({ items }) => {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
+  // Automatic rotation when not dragging and not hovered
   useEffect(() => {
-    if (isPaused) return;
     const interval = setInterval(() => {
-      setRotation((prev) => prev - theta);
-    }, 4000);
+      if (!isDragging && !isHovered.current) {
+        setRotation((prev) => prev - theta);
+      }
+    }, 3500);
     return () => clearInterval(interval);
-  }, [theta, isPaused]);
+  }, [theta, isDragging]);
 
-  const handlePrev = () => setRotation((prev) => prev + theta);
-  const handleNext = () => setRotation((prev) => prev - theta);
+  // Global mouse & touch listeners while dragging for uninterrupted swiping
+  useEffect(() => {
+    if (!isDragging) return;
 
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-    setIsPaused(true);
+    const handlePointerMove = (clientX) => {
+      const deltaX = clientX - dragStartX.current;
+      dragDistance.current = Math.abs(deltaX);
+      
+      // Track swipe velocity for flick momentum
+      velocity.current = clientX - lastX.current;
+      lastX.current = clientX;
+
+      // Real-time rotation tracking: 0.35 deg per pixel
+      setRotation(startRotation.current + deltaX * 0.35);
+    };
+
+    const handlePointerUp = () => {
+      setIsDragging(false);
+
+      // Flick momentum snap to nearest card
+      setRotation((prev) => {
+        let target = prev;
+        if (Math.abs(velocity.current) > 6) {
+          const dir = velocity.current > 0 ? 1 : -1;
+          target += dir * (theta * 0.5);
+        }
+        return Math.round(target / theta) * theta;
+      });
+    };
+
+    const onMouseMove = (e) => handlePointerMove(e.clientX);
+    const onMouseUp = () => handlePointerUp();
+
+    const onTouchMove = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        handlePointerMove(e.touches[0].clientX);
+      }
+    };
+    const onTouchEnd = () => handlePointerUp();
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('touchcancel', onTouchEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [isDragging, theta]);
+
+  const onMouseDown = (e) => {
+    if (e.button !== 0) return; // Only primary mouse button
+    setIsDragging(true);
+    dragDistance.current = 0;
+    dragStartX.current = e.clientX;
+    lastX.current = e.clientX;
+    velocity.current = 0;
+    startRotation.current = rotation;
   };
 
-  const handleTouchEnd = (e) => {
-    setIsPaused(false);
-    const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartX.current - touchEndX;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
-        handleNext();
-      } else {
-        handlePrev();
-      }
+  const onTouchStart = (e) => {
+    if (e.touches && e.touches.length > 0) {
+      setIsDragging(true);
+      dragDistance.current = 0;
+      dragStartX.current = e.touches[0].clientX;
+      lastX.current = e.touches[0].clientX;
+      velocity.current = 0;
+      startRotation.current = rotation;
     }
   };
 
   const currentIndex = Math.round((-rotation / theta) % items.length);
   const normalizedIndex = ((currentIndex % items.length) + items.length) % items.length;
 
+  // Navigate along shortest angular path so clicking first image from last advances forward rather than rewinding all the way back
+  const navigateToIndex = (targetIndex) => {
+    let diff = targetIndex - normalizedIndex;
+    if (diff > items.length / 2) {
+      diff -= items.length;
+    } else if (diff < -items.length / 2) {
+      diff += items.length;
+    }
+    setRotation((prev) => prev - diff * theta);
+  };
+
+  // Clicking any card smoothly rotates along shortest path to the front
+  const handleCardClick = (index) => {
+    if (dragDistance.current > 8) return; // Was dragging, not clicking
+    navigateToIndex(index);
+  };
+
+  const handlePrev = () => setRotation((prev) => prev + theta);
+  const handleNext = () => setRotation((prev) => prev - theta);
+
+  // Generous stage height so 3D perspective projection never cuts off at the bottom
+  const stageHeight = Math.round(cardSize.height * 1.4 + 50);
+
   return (
     <div 
-      className="relative w-full flex flex-col items-center justify-center py-4 select-none"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      className={`relative w-full flex flex-col items-center justify-center py-4 select-none touch-pan-y ${
+        isDragging ? 'cursor-grabbing' : 'cursor-grab'
+      }`}
+      onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
+      onMouseEnter={() => { isHovered.current = true; }}
+      onMouseLeave={() => { isHovered.current = false; }}
     >
       <div 
-        className="relative w-full flex items-center justify-center perspective-[1200px] overflow-hidden"
-        style={{ height: `${cardSize.height + 60}px` }}
+        className="relative w-full flex items-center justify-center perspective-[1200px]"
+        style={{ height: `${stageHeight}px` }}
       >
         <motion.div
           className="relative transform-style-3d"
@@ -165,33 +258,43 @@ const CylinderCarousel = ({ items }) => {
             transformStyle: 'preserve-3d' 
           }}
           animate={{ rotateY: rotation }}
-          transition={{ duration: 0.9, ease: [0.25, 1, 0.5, 1] }}
+          transition={
+            isDragging 
+              ? { duration: 0 } 
+              : { duration: 1.0, ease: [0.25, 1, 0.5, 1] }
+          }
         >
           {items.map((item, i) => (
             <div
               key={i}
-              className="absolute top-0 left-0 w-full h-full rounded-2xl overflow-hidden border border-white/20 shadow-xl backface-hidden"
+              onClick={() => handleCardClick(i)}
+              className="absolute top-0 left-0 w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden border border-white/30 shadow-2xl backface-hidden cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
               style={{
                 transform: `rotateY(${i * theta}deg) translateZ(${radius}px)`,
                 WebkitBackfaceVisibility: 'hidden',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent z-10" />
-              <img src={item.src} alt={item.title} className="w-full h-full object-cover pointer-events-none" />
-              <div className="absolute bottom-3 left-3 right-3 z-20 text-white">
-                <p className="font-bold text-sm sm:text-base md:text-lg leading-tight drop-shadow">{item.title}</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent z-10" />
+              <img 
+                src={item.src} 
+                alt={item.title} 
+                className="w-full h-full object-cover pointer-events-none select-none" 
+                draggable="false"
+              />
+              <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-20 text-white">
+                <p className="font-bold text-sm sm:text-base md:text-lg leading-tight drop-shadow-md">{item.title}</p>
               </div>
             </div>
           ))}
         </motion.div>
       </div>
 
-      {/* Controls & Indicators */}
+      {/* UI Controls: Prev/Next & Dots */}
       <div className="flex items-center gap-4 mt-6 z-20">
         <button 
           onClick={handlePrev}
           aria-label="Previous slide"
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 active:scale-95 transition-all shadow-sm flex items-center justify-center min-w-[44px] min-h-[44px]"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 active:scale-95 transition-all shadow-sm flex items-center justify-center min-w-[44px] min-h-[44px] cursor-pointer"
         >
           <ChevronLeft size={20} />
         </button>
@@ -200,9 +303,9 @@ const CylinderCarousel = ({ items }) => {
           {items.map((_, i) => (
             <button
               key={i}
-              onClick={() => setRotation(-i * theta)}
+              onClick={() => navigateToIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
-              className={`h-2.5 rounded-full transition-all min-h-[20px] py-1 ${
+              className={`h-2.5 rounded-full transition-all cursor-pointer min-h-[20px] py-1 ${
                 normalizedIndex === i 
                   ? 'w-8 bg-[#4B006E]' 
                   : 'w-2.5 bg-slate-300 hover:bg-slate-400'
@@ -214,7 +317,7 @@ const CylinderCarousel = ({ items }) => {
         <button 
           onClick={handleNext}
           aria-label="Next slide"
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 active:scale-95 transition-all shadow-sm flex items-center justify-center min-w-[44px] min-h-[44px]"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-slate-200 text-slate-700 hover:text-purple-700 hover:border-purple-300 active:scale-95 transition-all shadow-sm flex items-center justify-center min-w-[44px] min-h-[44px] cursor-pointer"
         >
           <ChevronRight size={20} />
         </button>
@@ -256,8 +359,6 @@ const Reveal = ({ children, delay = 0, width = "100%", direction = "up" }) => {
 // --- MAIN APPLICATION ---
 
 export default function App() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -289,12 +390,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-purple-200 selection:text-[#4B006E] overflow-x-hidden">
-      
-      {/* Scroll Progress Bar */}
-      <motion.div 
-        className="fixed top-0 left-0 right-0 h-1 bg-amber-400 origin-left z-[60]"
-        style={{ scaleX }}
-      />
 
       {/* Floating WhatsApp CTA */}
       <a 
